@@ -22,8 +22,15 @@ def main():
 
     rom = ROM(rom_bytes)
 
+    # Create RAM
+    ram = RAM()
+
+    # Create PPU
+    ppu = PPU()
+
     # Create CPI
-    cpu = CPU()
+    cpu = CPU(ram, ppu)
+    cpu.start_up()
     cpu.run_rom(rom)
 
 
