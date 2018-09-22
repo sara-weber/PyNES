@@ -36,8 +36,8 @@ class CPU(object):
         self.running = True
 
         self.instructions = [
-            SEIInstruction(),
-            CLDInstruction(),
+            SeiInstruction(),
+            CldInstruction(),
             LdaImmInstruction(),
             StaAbsInstruction()
         ]
@@ -93,10 +93,12 @@ class CPU(object):
                 raise Exception("Instruction not found", identifier_byte)
 
             # get the correct number of data bytes
-            num_data_bytes = instruction.instruction_length - 1
+            num_data_bytes = instruction.data_length
+
+            # get the data bytes
             data_bytes = self.rom.get(self.pc_reg + 1, num_data_bytes)
 
-            # Valid instruction
+            # valid instruction
             instruction.execute(self, data_bytes)
 
             self.pc_reg += instruction.instruction_length

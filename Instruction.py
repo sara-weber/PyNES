@@ -1,7 +1,22 @@
 from abc import ABC
+from typing import Optional, List
+
+import cpu as c
+from addressing import ImmediateReadAddressingMixin, NoAddressingMixin, AbsoluteAddressingMixin
+
+
+def writes_to_memory(cls):
+    """ This is a decorator that will set the class's _write_to_memory variable True
+    @param cls: the class that is being decorated
+    @return: the class object
+    """
+    cls._writes_to_memory = True
+    return cls
 
 
 class Instruction(ABC):
+    _writes_to_memory = False
+
     def __init__(self):
         pass
 
@@ -12,56 +27,56 @@ class Instruction(ABC):
     def identifier_byte(self) -> bytes:
         return None
 
-    @property
-    def instruction_length(self):
-        return 1
+    def get_address(self, data_bytes: bytes) -> Optional[int]:
+        return None
 
-    def execute(self, cpu, data_bytes):
-        # TODO: convert data_bytes to int
-        print(self.__str__())
+    def apply_side_effects(self, cpu: 'c.CPU'):
+        pass
+
+    def get_data(self, cpu, memory_address, data_bytes) -> Optional[int]:
+        return None
+
+    def write(self, cpu, memory_address, value):
+        if self._writes_to_memory:
+            memory_owner = cpu.get_memory_owner(memory_address)
+            memory_owner.set(memory_address, value)
+
+    def execute(self, cpu: 'c.CPU', data_bytes: bytes):
+        memory_address = self.get_address(data_bytes)
+
+        value = self.get_data(cpu, memory_address, data_bytes)
+
+        self.write(cpu, memory_address, value)
+
+        self.apply_side_effects(cpu)
 
 
-class LdaImmInstruction(Instruction):
-    identifier_byte = bytes.fromhex('78')
-    instruction_length = 2
+# write function
+class LdaImmInstruction(ImmediateReadAddressingMixin, Instruction):
+    identifier_byte = bytes([0xA9])
 
-    def execute(self, cpu, data_bytes):
-        super().execute(cpu, data_bytes)
-
-        # load value into accumulator reg
-        cpu.a_reg = data_bytes[0]
+    def write(self, cpu, memory_address, value):
+        cpu.a_reg = value
 
 
-class SEIInstruction(Instruction):
-    identifier_byte = bytes.fromhex('A9')
-    instruction_length = 2
+@writes_to_memory
+class StaAbsInstruction(AbsoluteAddressingMixin, Instruction):
+    identifier_byte = bytes([0x8D])
 
-    def execute(self, cpu, data_bytes):
-        super().execute(cpu, data_bytes)
+    def get_data(self, cpu, memory_address, data_bytes: bytes):
+        return cpu.a_reg
 
+
+class SeiInstruction(NoAddressingMixin, Instruction):
+    identifier_byte = bytes([0x78])
+
+    def apply_side_effects(self, cpu: 'c.CPU'):
         # set the instruction flag to 1
         cpu.status_reg.interrupt_bit = True
 
 
-class CLDInstruction(Instruction):
-    identifier_byte = bytes.fromhex('D8')
-    instruction_length = 1
+class CldInstruction(NoAddressingMixin, Instruction):
+    identifier_byte = bytes([0xD8])
 
-    def execute(self, cpu, data_bytes):
-        super().execute(cpu, data_bytes)
-
+    def apply_side_effects(self, cpu: 'c.CPU'):
         cpu.status_reg.decimal_bit = False
-
-
-class StaAbsInstruction(Instruction):
-    identifier_byte = bytes.fromhex('8D')
-    instruction_length = 3
-
-    def execute(self, cpu, data_bytes):
-        super().execute(cpu, data_bytes)
-
-        # Take a value from A reg and put it in memory
-        memory_address = int.from_bytes(data_bytes, byteorder='little')
-        val_to_store = cpu.a_reg
-        memory_owner = cpu.get_memory_owner(memory_address)
-        memory_owner.set(memory_address, val_to_store)
