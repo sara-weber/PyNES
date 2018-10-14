@@ -1,10 +1,9 @@
-from collections import defaultdict
 from typing import List
 
-from Instruction import *
+from generic_instructions import instructions
 from memory_owner import MemoryOwnerMixin
-from ram import RAM
 from ppu import PPU
+from ram import RAM
 from rom import ROM
 from status import Status
 
@@ -35,17 +34,6 @@ class CPU(object):
         # Program counter will store current execution point
         self.running = True
 
-        self.instructions = [
-            SeiInstruction(),
-            CldInstruction(),
-            LdaImmInstruction(),
-            StaAbsInstruction()
-        ]
-
-        self.instruction_mapping = defaultdict()
-        for instruction in self.instructions:
-            self.instruction_mapping[instruction.identifier_byte] = instruction
-
     def start_up(self):
         """ set the initial values of the registers
             Status (P) = $34
@@ -65,6 +53,14 @@ class CPU(object):
         self.a_reg = 0
 
         # TODO: Implement memory addresses
+
+    def get_memory(self, location: int) -> int:
+        """ Gets a byte from a given memory location
+        @param location: the memory location
+        @return: a byte from a given memory location
+        """
+        memory_owner = self.get_memory_owner(location)
+        return memory_owner.get(location)
 
     def get_memory_owner(self, location: int) -> MemoryOwnerMixin:
         """ return the owner of a memory function"""
@@ -88,17 +84,14 @@ class CPU(object):
             identifier_byte = self.rom.get(self.pc_reg, 1)
 
             # turn the byte into an Instruction
-            instruction = self.instruction_mapping.get(identifier_byte, None)
+            instruction = instructions.get(identifier_byte, None)
             if instruction is None:
                 raise Exception("Instruction not found", identifier_byte)
 
-            # get the correct number of data bytes
-            num_data_bytes = instruction.data_length
-
             # get the data bytes
-            data_bytes = self.rom.get(self.pc_reg + 1, num_data_bytes)
+            data_bytes = self.rom.get(self.pc_reg + 1, instruction.data_length)
 
             # valid instruction
             instruction.execute(self, data_bytes)
 
-            self.pc_reg += instruction.instruction_length
+            self.pc_reg += instruction.get_instruction_length()

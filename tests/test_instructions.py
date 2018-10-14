@@ -2,7 +2,7 @@ import pytest
 from mock import MagicMock
 
 from cpu import CPU
-from Instruction import LdaImmInstruction, StaAbsInstruction, SeiInstruction, CldInstruction
+from Instruction import LdaImm, StaAbs, Sei, Cld
 from ppu import PPU
 from ram import RAM
 
@@ -41,7 +41,7 @@ def test_lda_imm(cpu):
 
 def test_sta_abs(cpu):
     instruction_bytes = bytes([0x8D, 0x00, 0x20])
-    instruction = StaAbsInstruction()
+    instruction = StaAbs()
 
     check_instruction_bytes(instruction, instruction_bytes)
     # check that value in a reg has been loaded into memory
@@ -58,7 +58,7 @@ def test_sta_abs(cpu):
 
 def test_sei(cpu):
     instruction_bytes = bytes([0x78])
-    instruction = SeiInstruction()
+    instruction = Sei()
 
     check_instruction_bytes(instruction, instruction_bytes)
     # check that the interrupt bit has been enabled
@@ -69,7 +69,7 @@ def test_sei(cpu):
 
 def test_cld(cpu):
     instruction_bytes = bytes([0xD8])
-    instruction = CldInstruction()
+    instruction = Cld()
 
     check_instruction_bytes(instruction, instruction_bytes)
     # check that the interrupt bit has been enabled
