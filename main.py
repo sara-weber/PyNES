@@ -1,6 +1,6 @@
 import argparse
 from cpu import *
-from Instruction import *
+from instructions import *
 
 
 def main():

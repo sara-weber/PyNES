@@ -10,7 +10,7 @@ class RAM(MemoryOwnerMixin, object):
     memory_end_location = 0x1FFF
 
     def __init__(self):
-        self.memory = [0 for _ in range(KB * 2)],  # type: List[int]
+        self.memory = [0 for _ in range(KB * 2)]  # type: List[int]
 
     def get_memory(self):
         return self.memory

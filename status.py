@@ -1,3 +1,5 @@
+import math
+from collections import OrderedDict
 from enum import Enum
 
 
@@ -31,30 +33,19 @@ class Status:
         negative = 7
 
     def __init__(self):
-        self.bits = {
-            Status.StatusTypes.carry: False,
-            Status.StatusTypes.zero: False,
-            Status.StatusTypes.interrupt: True,
-            Status.StatusTypes.decimal: False,
-            Status.StatusTypes.unused1: False,
-            Status.StatusTypes.unused2: False,
-            Status.StatusTypes.overflow: False,
-            Status.StatusTypes.negative: False
-        }
-        self.negative_bit = False  # type: bool
-        self.overflow_bit = False  # type: bool
-        self.decimal_bit = False  # type: bool
-        self.interrupt_bit = True  # type: bool
-        self.zero_bit = False  # type: bool
-        self.carry_bit = False  # type: bool
+        self.bits = OrderedDict([
+            (Status.StatusTypes.carry, False),
+            (Status.StatusTypes.zero, False),
+            (Status.StatusTypes.interrupt, True),
+            (Status.StatusTypes.decimal, False),
+            (Status.StatusTypes.unused1, False),
+            (Status.StatusTypes.unused2, True),
+            (Status.StatusTypes.overflow, False),
+            (Status.StatusTypes.negative, False)
+        ])
 
-    def is_interrupt(self):
-        return not bool((self.reg[0] >> 2) & 1)
-
-    def set_interruptable(self, interruptable: bool):
-        if interruptable:
-            # set the second bit to 0
-            self.reg &= 251
-        else:
-            # set the second bit to 1
-            self.reg |= 4
+    def to_int(self):
+        value = 0
+        for i, bit in enumerate(self.bits.values()):
+            value += int(bit) * math.pow(2, i)
+        return int(value)
