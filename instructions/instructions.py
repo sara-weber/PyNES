@@ -1,5 +1,5 @@
 from addressing import *
-from base_instructions import SetBit, ClearBit, Nop
+from instructions.base_instructions import SetBit, ClearBit, Nop
 from status import Status
 
 

@@ -1,5 +1,5 @@
 from addressing import AbsoluteAddressing, IndirectAddressing, RelativeAddressing
-from base_instructions import Jmp, Jsr, BranchSet, BranchClear
+from instructions.base_instructions import Jmp, Jsr, BranchSet, BranchClear
 
 # #     # #     # #     # #     # #     # #     # #     # #     # #     # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

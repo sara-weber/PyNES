@@ -1,6 +1,6 @@
 from addressing import AbsoluteAddressing, ZeroPageAddressing, ZeroPageAddressingWithY, ZeroPageAddressingWithX, \
     AbsoluteAddressingWithX, AbsoluteAddressingWithY, IndexedIndirectAddressing, IndirectIndexedAddressing
-from base_instructions import Sta, Stx, Sty
+from instructions.base_instructions import Sta, Stx, Sty
 
 
     # #     # #     # #     # #     # #     # #     # #     # #     # #     # #

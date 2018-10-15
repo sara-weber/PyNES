@@ -2,8 +2,7 @@ import math
 from collections import OrderedDict
 from enum import Enum
 
-import cpu as c
-from generic_instructions import Instruction
+from instructions.generic_instructions import Instruction
 
 
 class Status:

@@ -3,8 +3,7 @@ from mock import MagicMock
 
 from cpu import CPU
 from instructions import Sei, Cld
-from load_instructions import LdaImm
-from store_instructions import StaAbs
+from instructions.store_instructions import StaAbs
 from ppu import PPU
 from ram import RAM
 

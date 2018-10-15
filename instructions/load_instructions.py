@@ -1,7 +1,7 @@
 from addressing import ImmediateReadAddressing, IndexedIndirectAddressing, ZeroPageAddressing, ZeroPageAddressingWithX, \
     AbsoluteAddressing, AbsoluteAddressingWithY, AbsoluteAddressingWithX, IndirectIndexedAddressing, \
     ZeroPageAddressingWithY
-from base_instructions import Lda, Ldy, Ldx
+from instructions.base_instructions import Lda, Ldy, Ldx
 
 
 # #     # #     # #     # #     # #     # #     # #     # #     # #     # #

@@ -1,7 +1,6 @@
 from addressing import ImplicitAddressing
-from generic_instructions import Instruction, WritesToMem
+from instructions.generic_instructions import Instruction, WritesToMem
 import cpu as c
-from status import Status
 
 
 class Jmp(Instruction):

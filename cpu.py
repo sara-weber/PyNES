@@ -1,11 +1,13 @@
 from typing import List
 
-import instructions as instructions_file
-import jump_instructions as jump_instructions_file
-import load_instructions as load_instructions_file
-import store_instructions as store_instructions_file
+import instructions.instructions as i_file
+import instructions.base_instructions as bi_file
+import instructions.generic_instructions as gi_file
+import instructions.jump_instructions as ji_file
+import instructions.load_instructions as ji_file
+import instructions.store_instructions as i_file
 
-from generic_instructions import Instruction
+from instructions.generic_instructions import Instruction
 from memory_owner import MemoryOwnerMixin
 from ppu import PPU
 from ram import RAM
