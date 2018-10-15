@@ -55,11 +55,11 @@ class AbsoluteAddressing(Addressing):
         return int.from_bytes(data_bytes, byteorder='little') + cls.get_offset(cpu)
 
 
-class AbsoluteAddressingXOffset(XRegOffset, AbsoluteAddressing):
+class AbsoluteAddressingWithX(XRegOffset, AbsoluteAddressing):
     """ Adds the X reg offset to an absolute memory location """
 
 
-class AbsoluteAddressingYOffset(YRegOffset, AbsoluteAddressing):
+class AbsoluteAddressingWithY(YRegOffset, AbsoluteAddressing):
     """ Adds the Y reg offset to an absolute memory location """
 
 
@@ -74,7 +74,6 @@ class ZeroPageAddressing(Addressing):
     @classmethod
     def get_address(cls, cpu, data_bytes: bytes) -> Optional[int]:
         address = int.from_bytes(data_bytes, byteorder='little') + cls.get_offset(cpu)
-        # Check for overflow
         if address > 255:
             address %= 256  # Mod it if it's too large
         return address
@@ -89,8 +88,7 @@ class ZeroPageAddressingWithY(YRegOffset, ZeroPageAddressing):
 
 
 class RelativeAddressing(Addressing):
-    """ Offset from current PC, can only jump 256 bytes """
-    # TODO: Check if signed
+    """ Offset from current PC, can only jump 128 bytes in either direction """
     data_length = 1
 
     @classmethod
@@ -113,7 +111,7 @@ class IndirectBase(Addressing):
         lsb = cpu.get_memory(lsb_location)
         msb = cpu.get_memory(msb_location)
 
-        return int.from_bytes(bytes([lsb, msb]), byteorder='little') + cls.get_offset(cpu)
+        return int.from_bytes(bytes([lsb, msb]), byteorder='little')
 
 
 class IndirectAddressing(IndirectBase, AbsoluteAddressing):
@@ -123,9 +121,11 @@ class IndirectAddressing(IndirectBase, AbsoluteAddressing):
 # TODO: Fix bugs with these ⬇⬇⬇
 
 class IndexedIndirectAddressing(IndirectBase, ZeroPageAddressingWithX):
-    """ Indexed indirect addressing """
+    """ Adds the x reg before indirection """
 
 
-class IndirectIndexedAddressing(IndirectBase, YRegOffset, ZeroPageAddressing):
-    """ Take a single byte address, add the X reg, then use that to look up a new address """
-
+class IndirectIndexedAddressing(IndirectBase, ZeroPageAddressing):
+    """ Adds the y reg after indirection """
+    @classmethod
+    def get_address(cls, cpu: 'c.CPU', data_bytes: bytes):
+        return super().get_address(cpu, data_bytes) + cpu.y_reg

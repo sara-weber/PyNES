@@ -1,6 +1,10 @@
 from typing import List
 
 import instructions as instructions_file
+import jump_instructions as jump_instructions_file
+import load_instructions as load_instructions_file
+import store_instructions as store_instructions_file
+
 from generic_instructions import Instruction
 from memory_owner import MemoryOwnerMixin
 from ppu import PPU
@@ -32,8 +36,21 @@ class CPU(object):
         self.y_reg = None  # y register
         self.a_reg = None  # a register
 
-        # Program counter will store current execution point
+        # program counter will store current execution point
         self.running = True
+
+        # create the instructions that the CPU can interpret
+        instructions_list = self._find_instructions(Instruction)
+        self.instructions = {}
+        for instruction in instructions_list:
+            if instruction in self.instructions:
+                raise Exception('Duplicate instruction identifier bytes:', instruction.__name__)
+            self.instructions[instruction.identifier_byte] = instruction
+
+    def _find_instructions(self, cls):
+        """ Finds all available instructions """
+        subclasses = [subc for subc in cls.__subclasses__() if subc.identifier_byte is not None]
+        return subclasses + [g for s in cls.__subclasses__() for g in self._find_instructions(s)]
 
     def start_up(self):
         """ set the initial values of the registers
@@ -60,10 +77,10 @@ class CPU(object):
         @param location: the memory location
         @return: a byte from a given memory location
         """
-        memory_owner = self.get_memory_owner(location)
+        memory_owner = self._get_memory_owner(location)
         return memory_owner.get(location)
 
-    def get_memory_owner(self, location: int) -> MemoryOwnerMixin:
+    def _get_memory_owner(self, location: int) -> MemoryOwnerMixin:
         """ return the owner of a memory function"""
         for memory_owner in self.memory_owners:
             if memory_owner.memory_start_location <= location <= memory_owner.memory_end_location:
@@ -71,10 +88,10 @@ class CPU(object):
 
         raise Exception('Cannot find memory owner')
 
-    def find_instructions(self, cls):
-        """ Finds all available instructions """
-        subclasses = [subc for subc in cls.__subclasses__() if subc.identifier_byte is not None]
-        return subclasses + [g for s in cls.__subclasses__() for g in self.find_instructions(s)]
+    def set_memory(self, location: int, value: int, num_bytes: int=1):
+        """ Sets the memory at a location to a value """
+        memory_owner = self._get_memory_owner(location)
+        memory_owner.set(location, value, num_bytes)
 
     def run_rom(self, rom: ROM):
         # unload old rom
@@ -88,20 +105,14 @@ class CPU(object):
         # load the rom program instructions into memory
         self.memory_owners.append(self.rom)
 
-        # get instructions as a list and convert to dict { byte: class }
-        instructions_list = self.find_instructions(Instruction)
-        instructions = {}
-        for instruction in instructions_list:
-            instructions[instruction.identifier_byte] = instruction
-
         # run program
         while self.running:
             # get current bye at pc
             starting_pc_reg = self.pc_reg
-            identifier_byte = self.get_memory_owner(self.pc_reg).get(self.pc_reg)
+            identifier_byte = self._get_memory_owner(self.pc_reg).get(self.pc_reg)
 
             # turn the byte into an Instruction
-            instruction = instructions.get(identifier_byte, None)
+            instruction = self.instructions.get(identifier_byte, None)
             if instruction is None:
                 raise Exception("Instruction not found: 0x" + identifier_byte.hex())
 
@@ -109,17 +120,21 @@ class CPU(object):
             data_bytes = self.rom.get(self.pc_reg + 1, instruction.data_length)
 
             # print out diagnostic information
-            print("{0:6}, {1:6}, {2:6}, A:{3:4}, X:{4:4}, Y:{5:4}, P:{6:4}, SP:{7:4}".format(hex(self.pc_reg),
-                                                                     (identifier_byte + data_bytes).hex(),
-                                                                     instruction.__name__,
-                                                                     hex(self.a_reg),
-                                                                     hex(self.x_reg),
-                                                                     hex(self.y_reg),
-                                                                     hex(self.status_reg.to_int()),
-                                                                     hex(self.sp_reg)))
+            print("{0:6}, {1:6}, {2:6}, A:{3:4}, X:{4:4}, Y:{5:4}, P:{6:4}, SP:{7:4}"
+                  .format(hex(self.pc_reg),
+                          (identifier_byte + data_bytes).hex(),
+                          instruction.__name__,
+                          hex(self.a_reg),
+                          hex(self.x_reg),
+                          hex(self.y_reg),
+                          hex(self.status_reg.to_int()),
+                          hex(self.sp_reg)))
 
             # increment the pc_reg
             self.pc_reg += instruction.get_instruction_length()
 
             # valid instruction
-            instruction.execute(self, data_bytes)
+            value = instruction.execute(self, data_bytes)
+
+            #
+            self.status_reg.update(instruction, value)
