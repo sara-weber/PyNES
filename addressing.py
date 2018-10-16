@@ -120,11 +120,11 @@ class IndirectAddressing(IndirectBase, AbsoluteAddressing):
 
 # TODO: Fix bugs with these ⬇⬇⬇
 
-class IndexedIndirectAddressing(IndirectBase, ZeroPageAddressingWithX):
+class IndirectAddressingWithX(IndirectBase, ZeroPageAddressingWithX):
     """ Adds the x reg before indirection """
 
 
-class IndirectIndexedAddressing(IndirectBase, ZeroPageAddressing):
+class IndirectAddressingWithY(IndirectBase, ZeroPageAddressing):
     """ Adds the y reg after indirection """
     @classmethod
     def get_address(cls, cpu: 'c.CPU', data_bytes: bytes):

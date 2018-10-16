@@ -1,5 +1,5 @@
 from addressing import AbsoluteAddressing, ZeroPageAddressing, ZeroPageAddressingWithY, ZeroPageAddressingWithX, \
-    AbsoluteAddressingWithX, AbsoluteAddressingWithY, IndexedIndirectAddressing, IndirectIndexedAddressing
+    AbsoluteAddressingWithX, AbsoluteAddressingWithY, IndirectAddressingWithX, IndirectAddressingWithY
 from instructions.base_instructions import Sta, Stx, Sty
 
 
@@ -32,11 +32,11 @@ class StaAbsWithY(AbsoluteAddressingWithY, Sta):
     identifier_byte = bytes([0x99])
 
 
-class StaIndX(IndexedIndirectAddressing, Sta):
+class StaIndXWithX(IndirectAddressingWithX, Sta):
     identifier_byte = bytes([0x81])
 
 
-class StaIndY(IndirectIndexedAddressing, Sta):
+class StaIndYWithY(IndirectAddressingWithY, Sta):
     identifier_byte = bytes([0x91])
 
 

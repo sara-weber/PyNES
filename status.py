@@ -49,12 +49,18 @@ class Status:
     def update(self, instruction: Instruction, value: int):
         """ Update the status based on the instruction attributes and the value calculated"""
         if instruction.sets_zero_bit:
-            self.bits[Status.StatusTypes.zero] = value == 0
+            self.bits[Status.StatusTypes.zero] = not bool(value)
         if instruction.sets_negative_bit:
-            self.bits[Status.StatusTypes.negative] = value < 0
+            self.bits[Status.StatusTypes.negative] = bool(value & 0b10000000)
+        if instruction.sets_overflow_bit:
+            self.bits[Status.StatusTypes.overflow] = bool(value & 0b01000000)
 
     def to_int(self):
         value = 0
         for i, bit in enumerate(self.bits.values()):
             value += int(bit) * math.pow(2, i)
         return int(value)
+
+    def from_int(self, value: int):
+        for i, key in enumerate(self.bits.keys()):
+            self.bits[key] = bool(value & (1 << i))

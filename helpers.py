@@ -20,6 +20,6 @@ def short_to_bytes(value: int) -> List[int]:
     return [upper, lower]
 
 
-def bytes_to_short(upper: int, lower: int) -> int:
+def bytes_to_short(*, upper: int, lower: int) -> int:
     """ casts 2 ints to a short """
     return (upper << 8) | lower

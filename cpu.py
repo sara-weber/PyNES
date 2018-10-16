@@ -1,11 +1,10 @@
 from typing import List
 
 import instructions.instructions as i_file
-import instructions.base_instructions as bi_file
-import instructions.generic_instructions as gi_file
 import instructions.jump_instructions as ji_file
 import instructions.load_instructions as ji_file
 import instructions.store_instructions as i_file
+import instructions.bit_instructions as bi_file
 
 from instructions.generic_instructions import Instruction
 from memory_owner import MemoryOwnerMixin
@@ -26,6 +25,10 @@ class CPU(object):
             self.ppu
         ]
 
+        # instruction to execute
+        self.instruction = None
+        self.data_bytes = None
+
         # status registers: store a single byte
         self.status_reg = None  # status register
 
@@ -37,9 +40,6 @@ class CPU(object):
         self.x_reg = None  # x register
         self.y_reg = None  # y register
         self.a_reg = None  # a register
-
-        # program counter will store current execution point
-        self.running = True
 
         # create the instructions that the CPU can interpret
         instructions_list = self._find_instructions(Instruction)
@@ -74,13 +74,14 @@ class CPU(object):
 
         # TODO: Implement memory addresses
 
-    def get_memory(self, location: int) -> int:
+    def get_memory(self, location: int, num_bytes: int=1) -> int:
         """ Gets a byte from a given memory location
         @param location: the memory location
+        @param num_bytes: number of bytes to pull from the memory location
         @return: a byte from a given memory location
         """
         memory_owner = self._get_memory_owner(location)
-        return memory_owner.get(location)
+        return memory_owner.get(location, num_bytes)
 
     def _get_memory_owner(self, location: int) -> MemoryOwnerMixin:
         """ return the owner of a memory function"""
@@ -95,7 +96,15 @@ class CPU(object):
         memory_owner = self._get_memory_owner(location)
         memory_owner.set(location, value, num_bytes)
 
-    def run_rom(self, rom: ROM):
+    def increase_stack_size(self, size: int):
+        """ Increases the stack size by decreasing the stack pointer """
+        self.sp_reg -= size
+
+    def decrease_stack_size(self, size: int):
+        """ Increases the stack size by increasing the stack pointer """
+        self.sp_reg += size
+
+    def load_rom(self, rom: ROM):
         # unload old rom
         if self.rom is not None:
             self.memory_owners.remove(self.rom)
@@ -107,36 +116,35 @@ class CPU(object):
         # load the rom program instructions into memory
         self.memory_owners.append(self.rom)
 
-        # run program
-        while self.running:
-            # get current bye at pc
-            starting_pc_reg = self.pc_reg
-            identifier_byte = self._get_memory_owner(self.pc_reg).get(self.pc_reg)
+    def identify(self):
+        # get current bye at pc
+        identifier_byte = self._get_memory_owner(self.pc_reg).get(self.pc_reg)
 
-            # turn the byte into an Instruction
-            instruction = self.instructions.get(identifier_byte, None)
-            if instruction is None:
-                raise Exception("Instruction not found: 0x" + identifier_byte.hex())
+        # turn the byte into an Instruction
+        self.instruction = self.instructions.get(identifier_byte, None)
+        if self.instruction is None:
+            raise Exception("Instruction not found: 0x" + identifier_byte.hex())
 
-            # get the data bytes
-            data_bytes = self.rom.get(self.pc_reg + 1, instruction.data_length)
+        # get the data bytes
+        self.data_bytes = self.rom.get(self.pc_reg + 1, self.instruction.data_length)
 
-            # print out diagnostic information
-            print("{0:6}, {1:6}, {2:6}, A:{3:4}, X:{4:4}, Y:{5:4}, P:{6:4}, SP:{7:4}"
-                  .format(hex(self.pc_reg),
-                          (identifier_byte + data_bytes).hex(),
-                          instruction.__name__,
-                          hex(self.a_reg),
-                          hex(self.x_reg),
-                          hex(self.y_reg),
-                          hex(self.status_reg.to_int()),
-                          hex(self.sp_reg)))
+        # print out diagnostic information
+        print("{0:6}, {1:6}, {2:6}, A:{3:4}, X:{4:4}, Y:{5:4}, P:{6:4}, SP:{7:4}"
+              .format(hex(self.pc_reg),
+                      (identifier_byte + self.data_bytes).hex(),
+                      self.instruction.__name__,
+                      hex(self.a_reg),
+                      hex(self.x_reg),
+                      hex(self.y_reg),
+                      hex(self.status_reg.to_int()),
+                      hex(self.sp_reg)))
 
-            # increment the pc_reg
-            self.pc_reg += instruction.get_instruction_length()
+    def execute(self):
+        # increment the pc_reg
+        self.pc_reg += self.instruction.get_instruction_length()
 
-            # valid instruction
-            value = instruction.execute(self, data_bytes)
+        # valid instruction
+        value = self.instruction.execute(self, self.data_bytes)
 
-            #
-            self.status_reg.update(instruction, value)
+        #
+        self.status_reg.update(self.instruction, value)

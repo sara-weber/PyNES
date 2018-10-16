@@ -1,6 +1,7 @@
 import argparse
 from cpu import *
 from instructions import *
+from nes_test import NesTestLog
 
 
 def main():
@@ -10,6 +11,7 @@ def main():
                         metavar='R',                # A name for the argument in usage messages
                         type=str,                   # Type of argument being passed
                         help='path to nes rom')     # Helper string that is displayed next to the positional argument
+    parser.add_argument('--test')
 
     args = parser.parse_args()
 
@@ -28,10 +30,25 @@ def main():
     # Create PPU
     ppu = PPU()
 
-    # Create CPI
+    # Create CPU
     cpu = CPU(ram, ppu)
     cpu.start_up()
-    cpu.run_rom(rom)
+    cpu.load_rom(rom)
+
+    # Check if running the test rom
+    if args.test:
+        # load in the nes_test.log
+        with open('nes_test.log', 'r') as nes_test_file:
+            nes_test_log = NesTestLog(nes_test_file.readlines())
+        while True:
+            cpu.identify()
+            nes_test_log.compare(cpu)
+            cpu.execute()
+    else:
+        while True:
+            cpu.identify()
+            cpu.execute()
+
 
 
 if __name__ == "__main__":
