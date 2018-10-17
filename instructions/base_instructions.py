@@ -1,3 +1,5 @@
+import numpy as np
+
 from addressing import ImplicitAddressing, RelativeAddressing
 from helpers import Numbers
 from instructions.generic_instructions import Instruction, WritesToMem, ReadsFromMem
@@ -112,7 +114,8 @@ class Lda(Ld):
     """
     @classmethod
     def write(cls, cpu, memory_address, value):
-        cpu.a_reg = value
+        cpu.a_reg = np.uint8(value)
+        return cpu.a_reg
 
 
 class Ldx(Ld):
@@ -122,7 +125,8 @@ class Ldx(Ld):
     """
     @classmethod
     def write(cls, cpu, memory_address, value):
-        cpu.x_reg = value
+        cpu.x_reg = np.uint8(value)
+        return cpu.x_reg
 
 
 class Ldy(Ld):
@@ -132,7 +136,8 @@ class Ldy(Ld):
     """
     @classmethod
     def write(cls, cpu, memory_address, value):
-        cpu.y_reg = value
+        cpu.y_reg = np.uint8(value)
+        return cpu.y_reg
 
 
 class Sta(WritesToMem, Instruction):
@@ -181,11 +186,150 @@ class And(Instruction):
         return cpu.a_reg
 
 
-class StackPush(Instruction):
+class Or(Instruction):
     """
     Pushes data onto stack
     N Z C I D V
-    - - - - - -
+    + + - - - -
+    """
+    sets_zero_bit = True
+    sets_negative_bit = True
+
+    @classmethod
+    def write(cls, cpu, memory_address, value):
+        # set the zero flag based on value & a_reg
+        cpu.a_reg |= value
+        return cpu.a_reg
+
+
+class Eor(Instruction):
+    """
+    Pushes data onto stack
+    N Z C I D V
+    + + - - - -
+    """
+    sets_zero_bit = True
+    sets_negative_bit = True
+
+    @classmethod
+    def write(cls, cpu, memory_address, value):
+        # set the zero flag based on value & a_reg
+        cpu.a_reg ^= value
+        return cpu.a_reg
+
+
+class Adc(Instruction):
+    """
+    A + M + C -> A, C
+    N Z C I D V
+    + + + - - +
+    """
+    sets_zero_bit = True
+    sets_negative_bit = True
+
+    @classmethod
+    def write(cls, cpu, memory_address, value):
+        # set the zero flag based on value & a_reg
+        result = cpu.a_reg + value + int(cpu.status_reg.bits[Status.StatusTypes.carry])
+        # if value and a_reg have different signs than result, set overflow
+        # i.e. positive + positive != negative
+        overflow = bool((cpu.a_reg ^ result) & (value ^ result) & 0x80)
+        cpu.status_reg.bits[Status.StatusTypes.overflow] = overflow
+
+        # if greater than 255, carry
+        if result >= 256:
+            result %= 256
+            cpu.status_reg.bits[Status.StatusTypes.carry] = True
+        else:
+            cpu.status_reg.bits[Status.StatusTypes.carry] = False
+
+        cpu.a_reg = result
+        return cpu.a_reg
+
+
+class Sbc(Adc):
+    """
+    A - M - C -> A
+    N Z C I D V
+    + + + - - +
+    """
+    sets_negative_bit = True
+    sets_zero_bit = True
+
+    @classmethod
+    def write(cls, cpu, memory_address, value):  # SBC is the same as the ADC with the bits inverted
+        return super().write(cpu, memory_address, value ^ 0xFF)
+
+
+class Compare(Instruction):
+    """ Compare the given value with the accumulator
+        N Z C I D V
+        + + + - - -
+    """
+    sets_negative_bit = True
+    sets_zero_bit = True
+    sets_carry_bit = True
+
+    @classmethod
+    def write(cls, cpu, memory_address, value):
+        # set the zero flag based on value & a_reg
+        cpu.status_reg.bits[Status.StatusTypes.carry] = not bool(value & 256)  # value - cpu.a_reg <= 0
+        return value
+
+
+class Cmp(Compare):
+    """ Compare the given value with the accumulator
+        N Z C I D V
+        + + + - - -
+    """
+    sets_negative_bit = True
+    sets_zero_bit = True
+    sets_carry_bit = True
+
+    @classmethod
+    def write(cls, cpu, memory_address, value):
+        # set the zero flag based on value & a_reg
+        result = cpu.a_reg - value
+        return super().write(cpu, memory_address, result)
+
+
+class Cpx(Compare):
+    """ Compare the given value with the X reg
+        N Z C I D V
+        + + + - - -
+    """
+    sets_negative_bit = True
+    sets_zero_bit = True
+    sets_carry_bit = True
+
+    @classmethod
+    def write(cls, cpu, memory_address, value):
+        # set the zero flag based on value & a_reg
+        result = cpu.x_reg - value
+        return super().write(cpu, memory_address, result)
+
+
+class Cpy(Compare):
+    """ Compare the given value with the Y reg
+        N Z C I D V
+        + + + - - -
+    """
+    sets_negative_bit = True
+    sets_zero_bit = True
+    sets_carry_bit = True
+
+    @classmethod
+    def write(cls, cpu, memory_address, value):
+        # set the zero flag based on value & a_reg
+        result = cpu.y_reg - value
+        return super().write(cpu, memory_address, result)
+
+
+
+
+class StackPush(Instruction):
+    """
+    Pushes data onto stack
     """
     @classmethod
     def write(cls, cpu, memory_address, value):
@@ -198,12 +342,12 @@ class StackPush(Instruction):
         # increases the size of the stack
         cpu.increase_stack_size(Numbers.BYTE.value)
 
+        return data_to_push
+
 
 class StackPull(Instruction):
     """
     Pulls data from the stack
-    N Z C I D V
-    - - - - - -
     """
     @classmethod
     def write(cls, cpu, memory_address, value):
@@ -214,7 +358,25 @@ class StackPull(Instruction):
         pulled_data = cpu.get_memory(cpu.sp_reg)
 
         # grab the data to write
-        cls.write_pulled_data(cpu, pulled_data)
+        return cls.write_pulled_data(cpu, pulled_data)
+
+
+class RegisterModifier(Instruction):
+    """
+    N Z C I D V
+    + + - - - -
+    """
+    sets_negative_bit = True
+    sets_zero_bit = True
+
+
+class Tax(ImplicitAddressing, RegisterModifier):
+    identifier_byte = bytes([0xAA])
+
+    @classmethod
+    def write(cls, cpu, memory_address, value):
+        cpu.x_reg = cpu.a_reg
+        return cpu.x_reg
 
 
 class SetBit(ImplicitAddressing, Instruction):

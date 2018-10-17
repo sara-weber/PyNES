@@ -8,6 +8,7 @@ class Instruction:
     sets_zero_bit = False
     sets_negative_bit = False
     sets_overflow_bit = False
+    sets_carry_bit = False
 
     # Overwritten by addressing mixin
     data_length = 0
@@ -36,7 +37,7 @@ class Instruction:
 
         updated_value = cls.write(cpu, memory_address, value)
 
-        if updated_value:
+        if updated_value is not None:
             value = updated_value
 
         cls.apply_side_effects(cpu)

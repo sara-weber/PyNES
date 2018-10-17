@@ -60,27 +60,33 @@ class NesTestLine:
         valid = pc_match and instruction_match and data_bytes_match and a_match and x_match and y_match and p_match and sp_match
 
         if not valid:
-            raise Exception('Instruction results not expected\n\n{0}\n'
+            raise Exception('Instruction results not expected\n\n{0:^39}\n'
                             '---------------------------------------\n'
                             '   | Match |   Expected  |   Actual\n'
                             'PC | {1:^5} | {2:^11} | {3:^11}\n'
                             'in | {4:^5} | {5:^11} | {6:^11}\n'
                             'db | {7:^5} | {8:^11} | {9:^11}\n'
-                            ' A | {10:^5}| {11:^11}| {12:^11}\n'
-                            ' X | {13:^5}| {14:^11}| {15:^11}\n'
-                            ' Y | {16:^5}| {17:^11}| {18:^11}\n'
-                            ' P | {19:^5}| {20:^11}| {21:^11}\n'
-                            'SP | {22:^5}| {23:^11}| {24:^11}\n'.format(cpu.instruction.__name__, pc_match,
-                                                                        hex(self.expected_pc_reg), hex(cpu.pc_reg),
-                                                                        instruction_match, self.expected_instruction,
-                                                                        cpu.instruction.__name__.upper(),
-                                                                        data_bytes_match, str(self.expected_bytes),
-                                                                        str(cpu.data_bytes), a_match,
-                                                                        hex(self.expected_a),
-                                                                        hex(cpu.a_reg),
-                                                                        x_match, hex(self.expected_x), hex(cpu.x_reg),
-                                                                        y_match, hex(self.expected_y), hex(cpu.y_reg),
-                                                                        p_match, hex(self.expected_p),
-                                                                        hex(cpu.status_reg.to_int()),
-                                                                        sp_match, hex(self.expected_sp), hex(cpu.sp_reg),
-                                                                        ))
+                            ' A | {10:^5} | {11:^11} | {12:^11}\n'
+                            ' X | {13:^5} | {14:^11} | {15:^11}\n'
+                            ' Y | {16:^5} | {17:^11} | {18:^11}\n'
+                            ' P | {19:^5} | {20:^11} | {21:^11}\n'
+                            'SP | {22:^5} | {23:^11} | {24:^11}\n'.format(cpu.instruction.__name__.upper(),
+                                                                          str(bool(pc_match)),
+                                                                          hex(self.expected_pc_reg), hex(cpu.pc_reg),
+                                                                          str(bool(instruction_match)),
+                                                                          self.expected_instruction,
+                                                                          cpu.instruction.__name__.upper(),
+                                                                          str(bool(data_bytes_match)),
+                                                                          str(self.expected_bytes),
+                                                                          str(cpu.data_bytes), str(bool(a_match)),
+                                                                          hex(self.expected_a),
+                                                                          hex(cpu.a_reg),
+                                                                          str(bool(x_match)), hex(self.expected_x),
+                                                                          hex(cpu.x_reg),
+                                                                          str(bool(y_match)), hex(self.expected_y),
+                                                                          hex(cpu.y_reg),
+                                                                          str(bool(p_match)), bin(self.expected_p),
+                                                                          bin(cpu.status_reg.to_int()),
+                                                                          str(bool(sp_match)), hex(self.expected_sp),
+                                                                          hex(cpu.sp_reg),
+                                                                          ))

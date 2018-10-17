@@ -1,6 +1,7 @@
 import math
 from collections import OrderedDict
 from enum import Enum
+from typing import List
 
 from instructions.generic_instructions import Instruction
 
@@ -61,6 +62,8 @@ class Status:
             value += int(bit) * math.pow(2, i)
         return int(value)
 
-    def from_int(self, value: int):
+    def from_int(self, value: int, bits_to_ignore: List[int]):
         for i, key in enumerate(self.bits.keys()):
+            if i in bits_to_ignore:
+                continue
             self.bits[key] = bool(value & (1 << i))

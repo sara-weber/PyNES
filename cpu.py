@@ -1,10 +1,12 @@
+import numpy as np
 from typing import List
 
 import instructions.instructions as i_file
-import instructions.jump_instructions as ji_file
-import instructions.load_instructions as ji_file
-import instructions.store_instructions as i_file
-import instructions.bit_instructions as bi_file
+import instructions.jump_instructions as j_file
+import instructions.load_instructions as l_file
+import instructions.store_instructions as s_file
+import instructions.bit_instructions as b_file
+import instructions.arithmetic_instructions as a_file
 
 from instructions.generic_instructions import Instruction
 from memory_owner import MemoryOwnerMixin
@@ -66,11 +68,11 @@ class CPU(object):
         # TODO Hex vs Binary
         self.pc_reg = 0
         self.status_reg = Status()
-        self.sp_reg = 0xFD
+        self.sp_reg = np.uint8(0xFD)
 
-        self.x_reg = 0
-        self.y_reg = 0
-        self.a_reg = 0
+        self.x_reg = np.uint8(0)
+        self.y_reg = np.uint8(0)
+        self.a_reg = np.uint8(0)
 
         # TODO: Implement memory addresses
 
@@ -98,11 +100,11 @@ class CPU(object):
 
     def increase_stack_size(self, size: int):
         """ Increases the stack size by decreasing the stack pointer """
-        self.sp_reg -= size
+        self.sp_reg -= np.uint8(size)
 
     def decrease_stack_size(self, size: int):
         """ Increases the stack size by increasing the stack pointer """
-        self.sp_reg += size
+        self.sp_reg += np.uint8(size)
 
     def load_rom(self, rom: ROM):
         # unload old rom
@@ -129,7 +131,7 @@ class CPU(object):
         self.data_bytes = self.rom.get(self.pc_reg + 1, self.instruction.data_length)
 
         # print out diagnostic information
-        print("{0:6}, {1:6}, {2:6}, A:{3:4}, X:{4:4}, Y:{5:4}, P:{6:4}, SP:{7:4}"
+        print("{0:6}, {1:6}, {2:12}, A:{3:4}, X:{4:4}, Y:{5:4}, P:{6:4}, SP:{7:4}"
               .format(hex(self.pc_reg),
                       (identifier_byte + self.data_bytes).hex(),
                       self.instruction.__name__,

@@ -1,82 +1,40 @@
-from addressing import AbsoluteAddressing, ZeroPageAddressing, ZeroPageAddressingWithY, ZeroPageAddressingWithX, \
-    AbsoluteAddressingWithX, AbsoluteAddressingWithY, IndirectAddressingWithX, IndirectAddressingWithY
-from instructions.base_instructions import Sta, Stx, Sty
+from helpers import generate_classes_from_string
+from instructions.base_instructions import Stx, Sta, Sty
+
+types = []
+
+# stx
+stx_types = '''
+zeropage      STX oper      86    2     3
+zeropage,Y    STX oper,Y    96    2     4
+absolute      STX oper      8E    3     4
+'''
+
+for generated in generate_classes_from_string(Stx, stx_types):
+    types.append(generated)
 
 
-    # #     # #     # #     # #     # #     # #     # #     # #     # #     # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#                                                                                 #
-#                                 STA Instructions                                #
-#                                                                                 #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    # #     # #     # #     # #     # #     # #     # #     # #     # #     # #
+# Sta
+sta_types = '''
+zeropage      STA oper      85    2     3
+zeropage,X    STA oper,X    95    2     4
+absolute      STA oper      8D    3     4
+absolute,X    STA oper,X    9D    3     5
+absolute,Y    STA oper,Y    99    3     5
+(indirect,X)  STA (oper,X)  81    2     6
+(indirect),Y  STA (oper),Y  91    2     6
+'''
+
+for generated in generate_classes_from_string(Sta, sta_types):
+    types.append(generated)
 
 
-class StaZpg(ZeroPageAddressing, Sta):
-    identifier_byte = bytes([0x85])
+# Sty
+sty_types = '''
+zeropage      STY oper      84    2     3
+zeropage,X    STY oper,X    94    2     4
+absolute      STY oper      8C    3     4
+'''
 
-
-class StaZpgX(ZeroPageAddressingWithX, Sta):
-    identifier_byte = bytes([0x95])
-
-
-class StaAbs(AbsoluteAddressing, Sta):
-    identifier_byte = bytes([0x8D])
-
-
-class StaAbsWithX(AbsoluteAddressingWithX, Sta):
-    identifier_byte = bytes([0x9D])
-
-
-class StaAbsWithY(AbsoluteAddressingWithY, Sta):
-    identifier_byte = bytes([0x99])
-
-
-class StaIndXWithX(IndirectAddressingWithX, Sta):
-    identifier_byte = bytes([0x81])
-
-
-class StaIndYWithY(IndirectAddressingWithY, Sta):
-    identifier_byte = bytes([0x91])
-
-
-    # #     # #     # #     # #     # #     # #     # #     # #     # #     # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#                                                                                 #
-#                                 STX Instructions                                #
-#                                                                                 #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    # #     # #     # #     # #     # #     # #     # #     # #     # #     # #
-
-
-class StxZpg(ZeroPageAddressing, Stx):
-    identifier_byte = bytes([0x86])
-
-
-class StxZpgY(ZeroPageAddressingWithY, Stx):
-    identifier_byte = bytes([0x96])
-
-
-class StxAbs(AbsoluteAddressing, Stx):
-    identifier_byte = bytes([0x8E])
-
-
-    # #     # #     # #     # #     # #     # #     # #     # #     # #     # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#                                                                                 #
-#                                 STY Instructions                                #
-#                                                                                 #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    # #     # #     # #     # #     # #     # #     # #     # #     # #     # #
-
-
-class StyZpg(ZeroPageAddressing, Sty):
-    identifier_byte = bytes([0x84])
-
-
-class StyZpgX(ZeroPageAddressingWithX, Sty):
-    identifier_byte = bytes([0x94])
-
-
-class StyAbs(AbsoluteAddressing, Sty):
-    identifier_byte = bytes([0x8C])
+for generated in generate_classes_from_string(Sty, sty_types):
+    types.append(generated)
