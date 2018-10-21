@@ -1,5 +1,5 @@
 from addressing import AbsoluteAddressing, IndirectAddressing, RelativeAddressing, ImplicitAddressing
-from instructions.base_instructions import Jmp, Jsr, BranchSet, BranchClear, Rts
+from instructions.base_instructions import Jmp, Jsr, BranchSet, BranchClear, Rts, Rti, Brk
 
 # #     # #     # #     # #     # #     # #     # #     # #     # #     # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -35,7 +35,7 @@ class JsrAbs(AbsoluteAddressing, Jsr):
     # #     # #     # #     # #     # #     # #     # #     # #     # #     # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #                                                                                 #
-#                                 JSR Instructions                                #
+#                                 RTS Instructions                                #
 #                                                                                 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     # #     # #     # #     # #     # #     # #     # #     # #     # #     # #
@@ -43,6 +43,32 @@ class JsrAbs(AbsoluteAddressing, Jsr):
 
 class RtsImp(ImplicitAddressing, Rts):
     identifier_byte = bytes([0x60])
+
+
+    # #     # #     # #     # #     # #     # #     # #     # #     # #     # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#                                                                                 #
+#                                 RTI Instructions                                #
+#                                                                                 #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # #     # #     # #     # #     # #     # #     # #     # #     # #     # #
+
+
+class RtiImp(ImplicitAddressing, Rti):
+    identifier_byte = bytes([0x40])
+
+
+    # #     # #     # #     # #     # #     # #     # #     # #     # #     # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#                                                                                 #
+#                                 BRK Instructions                                #
+#                                                                                 #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # #     # #     # #     # #     # #     # #     # #     # #     # #     # #
+
+
+class BrkImp(ImplicitAddressing, Brk):
+    identifier_byte = bytes([0x00])
 
 
     # #     # #     # #     # #     # #     # #     # #     # #     # #     # #

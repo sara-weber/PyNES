@@ -70,23 +70,14 @@ class NesTestLine:
                             ' X | {13:^5} | {14:^11} | {15:^11}\n'
                             ' Y | {16:^5} | {17:^11} | {18:^11}\n'
                             ' P | {19:^5} | {20:^11} | {21:^11}\n'
-                            'SP | {22:^5} | {23:^11} | {24:^11}\n'.format(cpu.instruction.__name__.upper(),
-                                                                          str(bool(pc_match)),
-                                                                          hex(self.expected_pc_reg), hex(cpu.pc_reg),
-                                                                          str(bool(instruction_match)),
-                                                                          self.expected_instruction,
-                                                                          cpu.instruction.__name__.upper(),
-                                                                          str(bool(data_bytes_match)),
-                                                                          str(self.expected_bytes),
-                                                                          str(cpu.data_bytes), str(bool(a_match)),
-                                                                          hex(self.expected_a),
-                                                                          hex(cpu.a_reg),
-                                                                          str(bool(x_match)), hex(self.expected_x),
-                                                                          hex(cpu.x_reg),
-                                                                          str(bool(y_match)), hex(self.expected_y),
-                                                                          hex(cpu.y_reg),
-                                                                          str(bool(p_match)), bin(self.expected_p),
-                                                                          bin(cpu.status_reg.to_int()),
-                                                                          str(bool(sp_match)), hex(self.expected_sp),
-                                                                          hex(cpu.sp_reg),
-                                                                          ))
+                            'SP | {22:^5} | {23:^11} | {24:^11}\n'.
+                            format(cpu.instruction.__name__.upper(), str(bool(pc_match)), hex(self.expected_pc_reg),
+                                   hex(cpu.pc_reg), str(bool(instruction_match)), self.expected_instruction,
+                                   cpu.instruction.__name__.upper(), str(bool(data_bytes_match)),
+                                   str(self.expected_bytes), str(cpu.data_bytes), str(bool(a_match)),
+                                   hex(self.expected_a), hex(cpu.a_reg), str(bool(x_match)),
+                                   hex(self.expected_x), hex(cpu.x_reg), str(bool(y_match)), hex(self.expected_y),
+                                   hex(cpu.y_reg), str(bool(p_match)), bin(self.expected_p),
+                                   bin(cpu.status_reg.to_int()), str(bool(sp_match)), hex(self.expected_sp),
+                                   hex(cpu.sp_reg),
+                                   ))
