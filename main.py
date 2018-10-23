@@ -30,8 +30,11 @@ def main():
     # Create PPU
     ppu = PPU()
 
+    # Create APU
+    apu = APU()
+
     # Create CPU
-    cpu = CPU(ram, ppu)
+    cpu = CPU(ram, ppu, apu)
     cpu.start_up()
     cpu.load_rom(rom)
 

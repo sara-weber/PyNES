@@ -2,7 +2,7 @@ import re
 from enum import Enum
 from typing import List
 
-from addressing import ZeroPageAddressing, AbsoluteAddressing, ImplicitAddressing, ImmediateReadAddressing, \
+from addressing import ZeroPageAddressing, AbsoluteAddressing, ImpliedAddressing, ImmediateReadAddressing, \
     ZeroPageAddressingWithX, AbsoluteAddressingWithX, AbsoluteAddressingWithY, IndirectAddressingWithX, \
     IndirectAddressingWithY, ZeroPageAddressingWithY, AccumulatorAddressing
 
@@ -45,7 +45,8 @@ def description_to_addressing(description: str):
         'absolute,Y': AbsoluteAddressingWithY,
         '(indirect,X)': IndirectAddressingWithX,
         '(indirect),Y': IndirectAddressingWithY,
-        'accumulator': AccumulatorAddressing
+        'accumulator': AccumulatorAddressing,
+        'implied': ImpliedAddressing
     }[description]
 
 

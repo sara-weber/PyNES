@@ -7,10 +7,11 @@ import instructions.load_instructions as l_file
 import instructions.store_instructions as s_file
 import instructions.bit_instructions as b_file
 import instructions.arithmetic_instructions as a_file
-from helpers import Numbers
+import instructions.combination_instructions as c_file
 
 from instructions.generic_instructions import Instruction
 from memory_owner import MemoryOwnerMixin
+from apu import APU
 from ppu import PPU
 from ram import RAM
 from rom import ROM
@@ -18,19 +19,22 @@ from status import Status
 
 
 class CPU(object):
-    def __init__(self, ram: RAM, ppu: PPU):
+    def __init__(self, ram: RAM, ppu: PPU, apu: APU):
         self.ram = ram
         self.ppu = ppu
+        self.apu = apu
         self.rom = None
 
         self.memory_owners = [  # type: List[MemoryOwnerMixin]
             self.ram,
-            self.ppu
+            self.ppu,
+            self.apu
         ]
 
         # instruction to execute
         self.instruction = None
         self.data_bytes = None
+        self.instruction_byte = None
 
         # status registers: store a single byte
         self.status_reg = None  # status register
@@ -70,7 +74,7 @@ class CPU(object):
         # TODO Hex vs Binary
         self.pc_reg = np.uint16(0)
         self.status_reg = Status()
-        self.sp_reg = np.uint16(0xFD)
+        self.sp_reg = np.uint8(0xFD)
 
         self.x_reg = np.uint8(0)
         self.y_reg = np.uint8(0)
@@ -131,16 +135,16 @@ class CPU(object):
     def identify(self):
         # get current bye at pc
         rom_instruction = True
-        identifier_byte = self._get_memory_owner(self.pc_reg).get(self.pc_reg)
-        if type(identifier_byte) is not bytes:
+        self.instruction_byte = self._get_memory_owner(self.pc_reg).get(self.pc_reg)
+        if type(self.instruction_byte) is not bytes:
             rom_instruction = False
-            identifier_byte = bytes([identifier_byte])
+            self.instruction_byte = bytes([self.instruction_byte])
 
 
         # turn the byte into an Instruction
-        self.instruction = self.instructions.get(identifier_byte, None)
+        self.instruction = self.instructions.get(self.instruction_byte, None)
         if self.instruction is None:
-            raise Exception("Instruction not found: 0x" + identifier_byte.hex())
+            raise Exception("Instruction not found: 0x" + self.instruction_byte.hex())
 
         # get the data bytes
         if rom_instruction:
@@ -154,7 +158,7 @@ class CPU(object):
         # print out diagnostic information
         print("{0:6}, {1:6}, {2:12}, A:{3:4}, X:{4:4}, Y:{5:4}, P:{6:4}, SP:{7:4}"
               .format(hex(self.pc_reg),
-                      (identifier_byte + self.data_bytes).hex(),
+                      (self.instruction_byte + self.data_bytes).hex(),
                       self.instruction.__name__,
                       hex(self.a_reg),
                       hex(self.x_reg),

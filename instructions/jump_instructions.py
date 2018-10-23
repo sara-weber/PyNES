@@ -1,4 +1,4 @@
-from addressing import AbsoluteAddressing, IndirectAddressing, RelativeAddressing, ImplicitAddressing
+from addressing import AbsoluteAddressing, IndirectAddressing, RelativeAddressing, ImpliedAddressing
 from instructions.base_instructions import Jmp, Jsr, BranchSet, BranchClear, Rts, Rti, Brk
 
 # #     # #     # #     # #     # #     # #     # #     # #     # #     # #
@@ -41,7 +41,7 @@ class JsrAbs(AbsoluteAddressing, Jsr):
     # #     # #     # #     # #     # #     # #     # #     # #     # #     # #
 
 
-class RtsImp(ImplicitAddressing, Rts):
+class RtsImp(ImpliedAddressing, Rts):
     identifier_byte = bytes([0x60])
 
 
@@ -54,7 +54,7 @@ class RtsImp(ImplicitAddressing, Rts):
     # #     # #     # #     # #     # #     # #     # #     # #     # #     # #
 
 
-class RtiImp(ImplicitAddressing, Rti):
+class RtiImp(ImpliedAddressing, Rti):
     identifier_byte = bytes([0x40])
 
 
@@ -67,7 +67,7 @@ class RtiImp(ImplicitAddressing, Rti):
     # #     # #     # #     # #     # #     # #     # #     # #     # #     # #
 
 
-class BrkImp(ImplicitAddressing, Brk):
+class BrkImp(ImpliedAddressing, Brk):
     identifier_byte = bytes([0x00])
 
 

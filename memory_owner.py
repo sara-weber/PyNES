@@ -27,6 +27,8 @@ class MemoryOwnerMixin(ABC):
             upper = self.get_memory()[position - self.memory_start_location]
             lower = self.get_memory()[position - self.memory_start_location - 1]
             return bytes_to_short(upper=upper, lower=lower)
+        else:
+            raise Exception('Unknown number size')
 
 
 

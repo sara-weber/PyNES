@@ -27,7 +27,7 @@ class YRegOffset(object):
         return cpu.y_reg
 
 
-class ImplicitAddressing(Addressing):
+class ImpliedAddressing(Addressing):
     """ Instructions that have data passed
         ex: CLD
     """
@@ -105,8 +105,8 @@ class RelativeAddressing(Addressing):
         # Get the program counter
         current_address = cpu.pc_reg
 
-        # Offset by the value in the instruction
-        return current_address + np.uint16(int.from_bytes(data_bytes, byteorder='little'))
+        # Offset by the value in the instruction, ***signed*** 8 bit value
+        return current_address + np.int8(int.from_bytes(data_bytes, byteorder='little'))
 
 
 class IndirectBase(Addressing):
